@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐱 Cat vs Dog Classifier | AI Image Recognition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        /* Source Buttons */
+        .source-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .source-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .source-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .source-btn.inaturalist {
+            background: #2d6a4f;
+            color: white;
+        }
+
+        .source-btn.google {
+            background: #4285f4;
+            color: white;
+        }
+
+        .source-btn.pexels {
+            background: #05a081;
+            color: white;
+        }
+
+        .source-btn.unsplash {
+            background: #000000;
+            color: white;
+        }
+
+        .source-btn.upload {
+            background: #667eea;
+            color: white;
+        }
+
+        .source-btn.url-input {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        /* Image Display Area */
+        .image-area {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .image-preview {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .image-preview h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .preview-box {
+            width: 100%;
+            height: 300px;
+            background: #e9ecef;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .preview-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .placeholder-text {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        /* URL Input Area */
+        .url-input-area {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .url-input-area.active {
+            display: block;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .url-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .url-input-group button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* File Upload Area */
+        .upload-area {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .upload-area.active {
+            display: block;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 40px;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input:hover {
+            border-color: #667eea;
+            background: #f1f3f5;
+        }
+
+        /* Predict Button */
+        .predict-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .predict-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .predict-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Results Area */
+        .results {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .prediction {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .confidence-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .confidence-fill {
+            background: #4caf50;
+            height: 30px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .probabilities {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .prob-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .prob-label {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .prob-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐱 vs 🐶 AI Classifier</h1>
+            <p>Upload or search for an image to see if it's a cat or a dog!</p>
+        </div>
+
+        <div class="content">
+            <!-- Image Source Buttons -->
+            <div class="source-buttons">
+                <button class="source-btn upload" onclick="showUpload()">
+                    📁 Upload from Computer
+                </button>
+                <button class="source-btn url-input" onclick="showUrlInput()">
+                    🔗 Enter Image URL
+                </button>
+                <button class="source-btn inaturalist" onclick="searchImage('inaturalist')">
+                    🌿 iNaturalist
+                </button>
+                <button class="source-btn google" onclick="searchImage('google')">
+                    🔍 Google Images
+                </button>
+                <button class="source-btn pexels" onclick="searchImage('pexels')">
+                    📸 Pexels
+                </button>
+                <button class="source-btn unsplash" onclick="searchImage('unsplash')">
+                    🖼️ Unsplash
+                </button>
+            </div>
+
+            <!-- File Upload Area -->
+            <div id="uploadArea" class="upload-area">
+                <div class="file-input" onclick="document.getElementById('fileInput').click()">
+                    📸 Click or drag and drop an image here
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileUpload(this)">
+                </div>
+            </div>
+
+            <!-- URL Input Area -->
+            <div id="urlArea" class="url-input-area">
+                <h3>Enter Image URL</h3>
+                <div class="url-input-group">
+                    <input type="text" id="imageUrl" placeholder="https://example.com/cat.jpg">
+                    <button onclick="loadUrlImage()">Load Image</button>
+                </div>
+            </div>
+
+            <!-- Image Preview Area -->
+            <div class="image-area">
+                <div class="image-preview">
+                    <h3>Selected Image</h3>
+                    <div class="preview-box" id="previewBox">
+                        <div class="placeholder-text">No image selected</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Predict Button -->
+            <button class="predict-btn" id="predictBtn" onclick="predictImage()" disabled>
+                🔮 Predict Now!
+            </button>
+
+            <!-- Results Area -->
+            <div id="results" class="results">
+                <div class="prediction" id="prediction"></div>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill">0%</div>
+                </div>
+                <div class="probabilities" id="probabilities"></div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentImageData = null;
+        let currentImageUrl = null;
+
+        // Show/Hide different input methods
+        function showUpload() {
+            document.getElementById('uploadArea').classList.add('active');
+            document.getElementById('urlArea').classList.remove('active');
+            clearImage();
+        }
+
+        function showUrlInput() {
+            document.getElementById('urlArea').classList.add('active');
+            document.getElementById('uploadArea').classList.remove('active');
+            clearImage();
+        }
+
+        function clearImage() {
+            currentImageData = null;
+            currentImageUrl = null;
+            document.getElementById('previewBox').innerHTML = '<div class="placeholder-text">No image selected</div>';
+            document.getElementById('predictBtn').disabled = true;
+            document.getElementById('results').classList.remove('active');
+        }
+
+        // Handle file upload
+        function handleFileUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (!file.type.startsWith('image/')) {
+                    showError('Please select a valid image file');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageData = e.target.result;
+                    currentImageUrl = null;
+                    displayImage(currentImageData);
+                    document.getElementById('predictBtn').disabled = false;
+                    hideError();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Load image from URL
+        function loadUrlImage() {
+            const url = document.getElementById('imageUrl').value.trim();
+            if (!url) {
+                showError('Please enter an image URL');
+                return;
+            }
+
+            // Validate URL
+            try {
+                new URL(url);
+            } catch(e) {
+                showError('Please enter a valid URL');
+                return;
+            }
+
+            // Load image
+            const img = new Image();
+            img.onload = function() {
+                currentImageUrl = url;
+                currentImageData = null;
+                displayImage(url);
+                document.getElementById('predictBtn').disabled = false;
+                hideError();
+            };
+            img.onerror = function() {
+                showError('Failed to load image from URL. Please check the URL and try again.');
+            };
+            img.src = url;
+        }
+
+        // Search images from different sources
+        async function searchImage(source) {
+            let searchUrl = '';
+            const query = prompt(`Enter search term for ${source} (cat or dog recommended):`, 'cat');
+            if (!query) return;
+
+            showError(''); // Clear any existing errors
+            
+            // Different search strategies for different sources
+            switch(source) {
+                case 'inaturalist':
+                    // iNaturalist API for cat and dog observations
+                    searchUrl = `https://api.inaturalist.org/v1/taxa?q=${query}&per_page=1`;
+                    try {
+                        const response = await fetch(searchUrl);
+                        const data = await response.json();
+                        if (data.results && data.results[0] && data.results[0].taxon_photos) {
+                            const photoUrl = data.results[0].taxon_photos[0].photo.url.replace('square', 'large');
+                            currentImageUrl = photoUrl;
+                            displayImage(photoUrl);
+                            document.getElementById('predictBtn').disabled = false;
+                        } else {
+                            // Fallback to random image API
+                            fallbackImageSearch(query);
+                        }
+                    } catch(error) {
+                        console.error('Error fetching from iNaturalist:', error);
+                        fallbackImageSearch(query);
+                    }
+                    break;
+                    
+                case 'google':
+                    // Using a proxy service for Google Images (demo purposes)
+                    showError('Google Images search requires API key. Using demo mode.');
+                    fallbackImageSearch(query);
+                    break;
+                    
+                case 'pexels':
+                    // Pexels API (you need to sign up for a free API key)
+                    const pexelsKey = 'YOUR_PEXELS_API_KEY'; // Replace with your key
+                    if (pexelsKey === 'YOUR_PEXELS_API_KEY') {
+                        showError('Please sign up for a free Pexels API key at pexels.com/api');
+                        fallbackImageSearch(query);
+                    } else {
+                        try {
+                            const response = await fetch(`https://api.pexels.com/v1/search?query=${query}&per_page=1`, {
+                                headers: { 'Authorization': pexelsKey }
+                            });
+                            const data = await response.json();
+                            if (data.photos && data.photos[0]) {
+                                currentImageUrl = data.photos[0].src.medium;
+                                displayImage(currentImageUrl);
+                                document.getElementById('predictBtn').disabled = false;
+                            }
+                        } catch(error) {
+                            fallbackImageSearch(query);
+                        }
+                    }
+                    break;
+                    
+                case 'unsplash':
+                    // Unsplash API (you need to sign up for a free API key)
+                    showError('Unsplash API requires registration. Using demo mode.');
+                    fallbackImageSearch(query);
+                    break;
+                    
+                default:
+                    fallbackImageSearch(query);
+            }
+        }
+
+        // Fallback image search using free APIs
+        function fallbackImageSearch(query) {
+            // Using Lorem Picsum or similar free image services
+            const width = 400;
+            const height = 400;
+            // Random cat or dog image (this is a placeholder - using placeholder images)
+            const seed = Math.random().toString(36).substring(7);
+            currentImageUrl = `https://picsum.photos/seed/${seed}/${width}/${height}`;
+            displayImage(currentImageUrl);
+            document.getElementById('predictBtn').disabled = false;
+            showError('Using placeholder images. For real API access, please sign up for the respective API keys.');
+        }
+
+        // Display image in preview
+        function displayImage(src) {
+            const previewBox = document.getElementById('previewBox');
+            previewBox.innerHTML = `<img src="${src}" alt="Preview" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+        }
+
+        // Predict image using API
+        async function predictImage() {
+            if (!currentImageData && !currentImageUrl) {
+                showError('Please select an image first');
+                return;
+            }
+
+            // Show loading state
+            const predictBtn = document.getElementById('predictBtn');
+            predictBtn.disabled = true;
+            predictBtn.innerHTML = '<span class="loading"></span> Analyzing...';
+            
+            // Hide previous results
+            document.getElementById('results').classList.remove('active');
+            hideError();
+
+            try {
+                let response;
+                
+                if (currentImageData) {
+                    // Convert base64 to blob for file upload
+                    const blob = await (await fetch(currentImageData)).blob();
+                    const formData = new FormData();
+                    formData.append('file', blob, 'image.jpg');
+                    
+                    response = await fetch('http://localhost:8000/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else if (currentImageUrl) {
+                    // Download image from URL and send
+                    const imageBlob = await fetch(currentImageUrl);
+                    const blob = await imageBlob.blob();
+                    const formData = new FormData();
+                    formData.append('file', blob, 'image_from_url.jpg');
+                    
+                    response = await fetch('http://localhost:8000/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                displayResults(result);
+                
+            } catch(error) {
+                console.error('Prediction error:', error);
+                showError(`Failed to predict: ${error.message}. Make sure the API server is running on  http://127.0.0.1:8000`);
+            } finally {
+                predictBtn.disabled = false;
+                predictBtn.innerHTML = '🔮 Predict Now!';
+            }
+        }
+
+        // Display prediction results
+        function displayResults(result) {
+            const resultsDiv = document.getElementById('results');
+            const predictionDiv = document.getElementById('prediction');
+            const confidenceFill = document.getElementById('confidenceFill');
+            const probabilitiesDiv = document.getElementById('probabilities');
+            
+            // Set prediction text with emoji
+            const emoji = result.predicted_class === 'cat' ? '🐱' : '🐶';
+            predictionDiv.innerHTML = `${emoji} It's a ${result.predicted_class.toUpperCase()}! ${emoji}`;
+            
+            // Set confidence bar
+            const confidencePercent = (result.confidence * 100).toFixed(1);
+            confidenceFill.style.width = `${confidencePercent}%`;
+            confidenceFill.innerHTML = `${confidencePercent}% Confidence`;
+            
+            // Set probabilities
+            probabilitiesDiv.innerHTML = `
+                <div class="prob-item">
+                    <div class="prob-label">🐱 Cat</div>
+                    <div class="prob-value">${(result.probabilities.cat * 100).toFixed(1)}%</div>
+                </div>
+                <div class="prob-item">
+                    <div class="prob-label">🐶 Dog</div>
+                    <div class="prob-value">${(result.probabilities.dog * 100).toFixed(1)}%</div>
+                </div>
+            `;
+            
+            // Show results with animation
+            resultsDiv.classList.add('active');
+            
+            // Add filename info if available
+            if (result.filename) {
+                const filenameInfo = document.createElement('div');
+                filenameInfo.style.textAlign = 'center';
+                filenameInfo.style.marginTop = '10px';
+                filenameInfo.style.fontSize = '0.9em';
+                filenameInfo.style.opacity = '0.8';
+                filenameInfo.innerHTML = `📄 ${result.filename}`;
+                resultsDiv.appendChild(filenameInfo);
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.innerHTML = message;
+            errorDiv.classList.add('active');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.classList.remove('active');
+            }, 5000);
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('active');
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.file-input');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = '#f1f3f5';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#dee2e6';
+            uploadArea.style.background = 'transparent';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#dee2e6';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentImageData = evt.target.result;
+                    displayImage(currentImageData);
+                    document.getElementById('predictBtn').disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
