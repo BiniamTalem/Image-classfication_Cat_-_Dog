@@ -1,3 +1,11 @@
+## Introduction
+This project builds upon the work completed in the first semester, where a classification model was developed to distinguish between cat and dog images using Flask. Flask served as the backend framework for deploying the machine learning model and creating a web interface for users to upload images and receive classification results.
+
+In the current semester, I have transitioned this project to use FastAPI instead of Flask. FastAPI is a modern, fast (high-performance) web framework for building APIs with Python. It offers several advantages over Flask, such as automatic generation of interactive API documentation, better performance, and easier handling of asynchronous operations.
+
+By migrating to FastAPI, the project now provides a more efficient and scalable way to serve the image classification model. Users can upload images through an API endpoint, and the server processes the images to classify whether they contain a cat or a dog. The GitHub link included in the response contains all the project files, code, and documentation for this implementation.
+
+This transition enhances the overall functionality and performance of the project, making it more suitable for real-world applications where speed and scalability are important.
 # 🐱🐶 Cat-Dog Classification API
 
 The Cat-Dog classification API is a practical demonstration of deploying a deep learning model as a web service. Its primary use is to automaticlly identify whether an uploaded image contains a cat or dog, returning the predicaiton along with a confidence score and per-class probabilities.
